@@ -115,13 +115,15 @@ def list_notes(token):
     response = requests.get(f"{BASE_URL}/get-files", headers=headers)
     if response.status_code == 200:
         files = response.json().get("files", [])
-        notes_list = []
-        for idx, file in enumerate(files):
-            notes_list.append({
-                "id": idx, 
-                "content": f"{file['file_name']}"
-            })
-        return notes_list
+
+        if not files:
+            print("Không có tệp tin nào")
+        else:
+            print("Danh sách ghi chú:")
+            for idx, file in enumerate(files):
+                print(f"ID: {idx}, Nội dung: {file['file_name']}")
+        return files
+
     else:
         print(response.json())
         return []
@@ -133,14 +135,16 @@ def delete_note(token, note_id):
     return response.status_code == 200
 
 # Chia sẻ ghi chú
-def share_note(token, note_id, hours=1):
+def share_note(token, note_id, minutes=60):
     headers = {"Authorization": f"Bearer {token}"}
-    response = requests.post(f"{BASE_URL}/share-note/{note_id}", json={"hours": hours}, 
+    response = requests.post(f"{BASE_URL}/share-note/{note_id}", json={"hours": minutes / 60}, 
                               headers=headers)
+                              
     if response.status_code == 200:
         return response.json()
     else:
-        print(f"Error: {response.status_code} - {response.text}")
+        error_message = response.json().get('error', 'Lỗi không xác định')
+        print(error_message)
         return None
 
 # Truy cập ghi chú được chia sẻ
@@ -153,7 +157,22 @@ def access_shared_note(share_url):
     except requests.exceptions.RequestException as req_err:
         print(f"Error accessing shared note: {req_err}")
         return None
+
+# Xóa ghi chú đã chia sẻ
+def cancel_shared_note(token, share_url):
+    # Tách ID ghi chú từ URL
+    share_id = share_url.split('/')[-1]
+    headers = {"Authorization": f"Bearer {token}"}
     
+    response = requests.delete(f"{BASE_URL}/cancel-share/{share_id}", headers=headers)
+    
+    if response.status_code == 200:
+        print("Đã hủy chia sẻ ghi chú")
+        return True
+    else:
+        print("Ghi chú không tồn tại hoặc đã hết hạn")
+        return False
+
 # Hiển thị menu
 def show_menu():
     print("1. Đăng ký")
@@ -194,15 +213,13 @@ def after_login_menu(token):
         print("4. Xóa ghi chú")
         print("5. Chia sẻ ghi chú")
         print("6. Truy cập ghi chú được chia sẻ")
-        print("7. Thoát")
+        print("7. Hủy chia sẻ ghi chú")    
+        print("8. Thoát")
 
         choice = input("Chọn chức năng: ")
 
         if choice == "1":
             notes = list_notes(token)
-            print("Danh sách ghi chú:")
-            for note in notes:
-                print(f"ID: {note['id']}, Nội dung: {note['content']}")
 
         elif choice == "2":
             file_path = input("Đường dẫn tệp tin: ")
@@ -224,8 +241,9 @@ def after_login_menu(token):
 
         elif choice == "5":
             note_id = int(input("Nhập ID ghi chú muốn chia sẻ: "))
-            hours = int(input("Nhập số giờ hiệu lực (mặc định 1): ") or 1)
-            shared_info = share_note(token, note_id, hours)
+            minutes = int(input("Nhập số phút hiệu lực (mặc định 60): ") or 60)
+            shared_info = share_note(token, note_id, minutes)
+            
             if shared_info:
                 print(f"URL chia sẻ: {shared_info['share_url']}")
 
@@ -242,8 +260,12 @@ def after_login_menu(token):
                 print(shared_note)
             else:
                 print("Không thể truy cập ghi chú.")
-
+    
         elif choice == "7":
+            share_url = input("Nhập URL ghi chú được chia sẻ: ")
+            cancel_shared_note(token, share_url)
+
+        elif choice == "8":
             print("Thoát.")
             break
 

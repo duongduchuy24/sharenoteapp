@@ -140,7 +140,7 @@ def get_files():
 # VÕ NGUYỄN GIA HƯNG
 # Tạo URL chia sẻ
 def generate_share_url(note_id, expiration_time):
-    # Giả lập tạo URL chia sẻ
+    # Định dạng URL chia sẻ
     return f"http://127.0.0.1:5000/shared/{note_id}"
 
 
@@ -148,11 +148,13 @@ def generate_share_url(note_id, expiration_time):
 @app.route("/list-notes", methods=["GET"])
 def list_notes():
     auth_header = request.headers.get("Authorization")
+
     if not auth_header:
         return jsonify({"error": "Token không được cung cấp!"}), 401
 
     token = auth_header.split(" ")[1]
     username = verify_token(token)
+
     if not username:
         return jsonify({"error": "Token không hợp lệ hoặc đã hết hạn!"}), 401
 
@@ -168,11 +170,13 @@ def list_notes():
 @app.route("/delete-note/<int:note_id>", methods=["DELETE"])
 def delete_note(note_id):
     auth_header = request.headers.get("Authorization")
+
     if not auth_header:
         return jsonify({"error": "Token không được cung cấp!"}), 401
 
     token = auth_header.split(" ")[1]
     username = verify_token(token)
+
     if not username:
         return jsonify({"error": "Token không hợp lệ hoặc đã hết hạn!"}), 401
 
@@ -193,11 +197,13 @@ def delete_note(note_id):
 def share_note(note_id):
     try:
         auth_header = request.headers.get("Authorization")
+
         if not auth_header:
             return jsonify({"error": "Token không được cung cấp!"}), 401
 
         token = auth_header.split(" ")[1]
         username = verify_token(token)
+
         if not username:
             return jsonify({"error": "Token không hợp lệ hoặc đã hết hạn!"}), 401
 
@@ -235,6 +241,7 @@ def get_shared_note(share_id):
     db = load_database()
     shared_note = db["shared_notes"].get(share_id)
     if shared_note:
+
         if datetime.datetime.fromisoformat(shared_note["expires_at"]) > datetime.datetime.utcnow():
             return jsonify({
                 "username": shared_note["username"],
@@ -242,8 +249,36 @@ def get_shared_note(share_id):
             })
         else:
             return jsonify({"error": "Ghi chú đã hết hạn!"}), 410
+            
     return jsonify({"error": "Ghi chú không tồn tại!"}), 404
 
+
+# API Hủy chia sẻ ghi chú
+@app.route("/cancel-share/<share_id>", methods=["DELETE"])
+def cancel_shared_note(share_id):
+    auth_header = request.headers.get("Authorization")
+    if not auth_header:
+        return jsonify({"error": "Token không được cung cấp!"}), 401
+
+    token = auth_header.split(" ")[1]
+    username = verify_token(token)
+    if not username:
+        return jsonify({"error": "Token không hợp lệ hoặc đã hết hạn!"}), 401
+
+    db = load_database()
+    shared_notes = db.get("shared_notes", {})
+
+    if share_id not in shared_notes:
+        return jsonify({"error": "Ghi chú không tồn tại."}), 404
+
+    # Check if the shared note belongs to the current user
+    if shared_notes[share_id]["username"] == username:
+        del shared_notes[share_id]
+        db["shared_notes"] = shared_notes
+        save_database(db)
+        return jsonify({"message": "Đã hủy chia sẻ ghi chú"}), 200
+    else:
+        return jsonify({"error": "Bạn không có quyền hủy chia sẻ này"}), 403
 
 if __name__ == "__main__":
     # Tạo file cơ sở dữ liệu nếu chưa tồn tại
