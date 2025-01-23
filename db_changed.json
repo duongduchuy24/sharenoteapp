@@ -1,0 +1,36 @@
+{
+    "users": {
+        "demo": {
+            "password": "$2b$12$zQuynCEjSAaZfSgWxtg1G.NS3M2NBNneITaIfQTvOxZfodK2tTde6"
+        }
+    },
+    "notes": {
+        "demo": []
+    },
+    "shared_notes": {
+        "b2a449f9-2abe-4565-8299-41fd6ba2bb39": {
+            "username": "demo",
+            "file_name": "db.txt",
+            "encrypted_file": "cWYaZ7L1gSLqgV/mBWLwZkSxo8FPlbbDtvr9FD8bfeI8jl4M3UDoo11dqW4s1kYk2tsvyfcT0mPTZ907yn+3NQ==",
+            "expires_at": "2025-01-23T11:05:54.823620"
+        },
+        "68e83e1c-bb2e-4d4a-8647-bdc1760edbdf": {
+            "username": "demo",
+            "file_name": "db.txt",
+            "encrypted_file": "cWYaZ7L1gSLqgV/mBWLwZkSxo8FPlbbDtvr9FD8bfeI8jl4M3UDoo11dqW4s1kYk2tsvyfcT0mPTZ907yn+3NQ==",
+            "expires_at": "2025-01-23T11:08:04.884265"
+        }
+    },
+    "files": {
+        "demo": [
+            {
+                "file_name": "db.txt",
+                "encrypted_file": "cWYaZ7L1gSLqgV/mBWLwZkSxo8FPlbbDtvr9FD8bfeI8jl4M3UDoo11dqW4s1kYk2tsvyfcT0mPTZ907yn+3NQ=="
+            },
+            {
+                "file_name": "demo.txt",
+                "encrypted_file": "z8K+0OfdBgFV5IykrFeukslKsGS13mwfVWkXkPKBbs7qUN9+4BWObmjIMja50LStNpaw8RyohYLeRdjVo9SIhsgrjgYoFT6e/G+UYt64FlHhsjS2+k9QpKQJ/xtrtgbXqdFzekB8zf/GjWJfaYN8xm87BncMTak9uWqz13EMd8o="
+            }
+        ]
+    }
+}
