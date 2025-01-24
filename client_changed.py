@@ -240,18 +240,28 @@ def after_login_menu(token):
                 print("Không thể xóa ghi chú.")
 
         elif choice == "5":
+            notes = list_notes(token)
+
+            if not notes:
+                print("Không tồn tại ghi chú nào.")
+                continue
+
             note_id = int(input("Nhập ID ghi chú muốn chia sẻ: "))
-            minutes = int(input("Nhập số phút hiệu lực (mặc định 60): ") or 60)
-            shared_info = share_note(token, note_id, minutes)
-            
-            if shared_info:
-                print(f"URL chia sẻ: {shared_info['share_url']}")
 
-                expires_at = datetime.datetime.fromisoformat(shared_info['expires_at'])
-                expires_at += datetime.timedelta(hours=7)  # Chuyển sang timezone UTC+7
-                formatted_expires_at = expires_at.strftime("%d-%m-%y, %H:%M:%S")
-                print(f"Hết hạn vào: {formatted_expires_at}")
+            if 0 <= note_id < len(notes):
+                minutes = int(input("Nhập số phút hiệu lực (mặc định 60): ") or 60)
+                shared_info = share_note(token, note_id, minutes)
 
+                if shared_info:
+                    print(f"URL chia sẻ: {shared_info['share_url']}")
+
+                    expires_at = datetime.datetime.fromisoformat(shared_info['expires_at'])
+                    expires_at += datetime.timedelta(hours=7)  # Chuyển sang timezone UTC+7
+                    formatted_expires_at = expires_at.strftime("%d-%m-%y, %H:%M:%S")
+                    print(f"Hết hạn vào: {formatted_expires_at}")
+            else:
+                print("ID ghi chú không hợp lệ.")
+                
         elif choice == "6":
             share_url = input("Nhập URL ghi chú được chia sẻ: ")
             shared_note = access_shared_note(share_url)

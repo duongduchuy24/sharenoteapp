@@ -239,16 +239,23 @@ def share_note(note_id):
 @app.route("/shared/<share_id>", methods=["GET"])
 def get_shared_note(share_id):
     db = load_database()
-    shared_note = db["shared_notes"].get(share_id)
-    if shared_note:
+    shared_notes = db.get("shared_notes", {})
+    
+    # Bỏ đi các ghi chú đã hết hạn
+    current_time = datetime.datetime.utcnow()
+    shared_notes = {
+        sid: note_info for sid, note_info in shared_notes.items() 
+        if datetime.datetime.fromisoformat(note_info["expires_at"]) > current_time
+    }
+    db["shared_notes"] = shared_notes
+    save_database(db)
 
-        if datetime.datetime.fromisoformat(shared_note["expires_at"]) > datetime.datetime.utcnow():
-            return jsonify({
-                "username": shared_note["username"],
-                "note": shared_note["encrypted_file"]
-            })
-        else:
-            return jsonify({"error": "Ghi chú đã hết hạn!"}), 410
+    shared_note = shared_notes.get(share_id)
+    if shared_note:
+        return jsonify({
+            "username": shared_note["username"],
+            "note": shared_note["encrypted_file"]
+        })
             
     return jsonify({"error": "Ghi chú không tồn tại!"}), 404
 
